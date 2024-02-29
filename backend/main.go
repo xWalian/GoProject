@@ -17,9 +17,9 @@ import (
 )
 
 type Order struct {
-	Product_id int `json: "product_id"`
-	Quantity   int `json: "quantity"`
-	Owner      int `json: "owner"`
+	Product_id int `json:"product_id"`
+	Quantity   int `json:"quantity"`
+	Owner      int `json:"owner"`
 }
 
 type Repository struct {
