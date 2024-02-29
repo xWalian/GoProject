@@ -10,8 +10,8 @@ import (
 	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
 	_ "github.com/xWalian/GoProject/backend/docs"
-	"github.com/xWalian/GoProject/backend/src/application/models"
-	"github.com/xWalian/GoProject/backend/src/application/storage"
+	"github.com/xWalian/GoProject/tree/main/backend/src/application/models"
+	"github.com/xWalian/GoProject/tree/main/backend/src/application/storage"
 	"gorm.io/gorm"
 )
 

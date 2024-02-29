@@ -1,4 +1,4 @@
-package storage
+package src.application.storage
 
 import (
 	"fmt"
