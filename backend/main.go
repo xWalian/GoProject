@@ -3,16 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
-	"main/src/application/storage"
 	"net/http"
 	"os"
+
+	_ "main/docs"
+	"main/models"
+	"main/storage"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
-	_ "github.com/xWalian/GoProject/backend/docs"
-	"github.com/xWalian/GoProject/backend/src/application/models"
-	"github.com/xWalian/GoProject/backend/src/application/storage"
 	"gorm.io/gorm"
 )
 
@@ -99,16 +99,14 @@ func (r *Repository) GetOrderById(context *fiber.Ctx) error {
 
 	err := r.DB.Where("id = ?", id).First(orderModel).Error
 	if err != nil {
-		context.Status(http.StatusBadRequest).Json(
-			&fiber.Map{"messege":"could not get an order"}
-			return err
-		)
-		
+		context.Status(http.StatusBadRequest).JSON(
+			&fiber.Map{"messege": "could not get an order"})
+		return err
 	}
 	context.Status(http.StatusOK).JSON(&fiber.Map{
-		"message": "order id fetched successfully", 
-		"data":orderModel,
-})
+		"message": "order id fetched successfully",
+		"data":    orderModel,
+	})
 	return nil
 }
 
@@ -122,6 +120,16 @@ func (r *Repository) SetupRoutes(app *fiber.App) {
 
 func main() {
 	err := godotenv.Load(".env")
+	config := &storage.Config{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		Password: os.Getenv("DB_PASSWORD"),
+		User:     os.Getenv("DB_USER"),
+		SSLMode:  os.Getenv("DB_SSLMODE"),
+		DBName:   os.Getenv("DB_NAME"),
+	}
+
+	db, err := storage.NewConnection(config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -132,15 +140,6 @@ func main() {
 	r := Repository{
 		DB: db,
 	}
-	config := &storage.Config{
-		Host:     os.Gatenv("DB_HOST"),
-		Port:     os.Gatenv("DB_PORT"),
-		Password: os.Gatenv("DB_PASS"),
-		User:     os.Gatenv("DB_USER"),
-		SSLMode:  os.Gatenv("DB_SSLMODE"),
-		DBName:   os.Gatenv("DB_NAME"),
-	}
-	db, err := storage.NewConnection(config)
 
 	if err != nil {
 		log.Fatal("Could not load the database")
