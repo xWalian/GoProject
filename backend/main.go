@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"main/src/application/storage"
 	"net/http"
@@ -42,7 +43,29 @@ func (r *Repository) CreateOrder(context *fiber.Ctx) error {
 		return err
 	}
 
-	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "book has been added"})
+	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "order has been added"})
+	return nil
+}
+
+func (r *Repository) DeleteOrder(context *fiber.Ctx) error {
+	orderModel := models.Orders{}
+	id := context.Params("id")
+	if id == "" {
+		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{
+			"message": "id cannot be empty",
+		})
+		return nil
+	}
+
+	err := r.DB.Delete(orderModel, id)
+
+	if err.Error != nil {
+		context.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message": "could not delete order",
+		})
+		return err.Error
+	}
+	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "order has been deleted"})
 	return nil
 }
 
@@ -62,6 +85,33 @@ func (r *Repository) GetOrders(context *fiber.Ctx) error {
 	})
 	return nil
 }
+
+func (r *Repository) GetOrderById(context *fiber.Ctx) error {
+	id := context.Params("id")
+	orderModel := &models.Orders{}
+	if id == "" {
+		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{
+			"message": "id cannot be empty",
+		})
+		return nil
+	}
+	fmt.Println("the id is", id)
+
+	err := r.DB.Where("id = ?", id).First(orderModel).Error
+	if err != nil {
+		context.Status(http.StatusBadRequest).Json(
+			&fiber.Map{"messege":"could not get an order"}
+			return err
+		)
+		
+	}
+	context.Status(http.StatusOK).JSON(&fiber.Map{
+		"message": "order id fetched successfully", 
+		"data":orderModel,
+})
+	return nil
+}
+
 func (r *Repository) SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	api.Post("/create-order", r.CreateOrder)
@@ -74,6 +124,10 @@ func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal(err)
+	}
+	err = models.MigrateOrders(db)
+	if err != nil {
+		log.Fatal("could not migrate")
 	}
 	r := Repository{
 		DB: db,
